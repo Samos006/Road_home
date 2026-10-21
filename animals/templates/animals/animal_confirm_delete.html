@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Удаление животного{% endblock %}
+
+{% block content %}
+<div class="page" style="display:flex;justify-content:center;align-items:center;min-height:70vh;">
+
+  <div style="
+      background: #fff;
+      padding: 32px;
+      border-radius: var(--r);
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      border: 1px solid #eee;
+  ">
+
+    <div style="font-size:42px;margin-bottom:12px;">⚠️</div>
+
+    <h1 style="margin-bottom:10px;font-size:22px;color:var(--dark);">
+      Удалить питомца?
+    </h1>
+
+    <p style="color:var(--muted);margin-bottom:24px;">
+      Ты точно хочешь удалить <b>{{ object.name }}</b>?<br>
+      Это действие нельзя отменить.
+    </p>
+
+    <form method="post" style="display:flex;flex-direction:column;gap:10px;">
+      {% csrf_token %}
+
+      <button type="submit" class="btn btn-red">
+        Да, удалить
+      </button>
+
+      <a href="{% url 'animals:details' object.id %}" class="btn btn-ghost">
+        Отмена
+      </a>
+    </form>
+
+  </div>
+
+</div>
+{% endblock %}

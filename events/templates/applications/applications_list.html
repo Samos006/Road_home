@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Заявки на моих питомцев — Дорога домой{% endblock %}
+
+{% block content %}
+<div class="page page--medium">
+
+  <div style="margin-bottom:24px;font-size:14px;">
+    <a href="{% url 'users:user_detail' request.user.id %}" style="color:var(--red);font-weight:700;">← Назад в профиль</a>
+  </div>
+
+  <div class="list-header">
+    <h1>Заявки на <span style="color:var(--red);">моих питомцев</span></h1>
+    <span style="font-size:14px;color:var(--muted);font-weight:600;">
+      Всего: {{ applications.count }}
+    </span>
+  </div>
+
+  {% if applications %}
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      {% for app in applications %}
+        <div class="section-card" style="padding:24px 28px;">
+          <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
+
+            <!-- Животное -->
+            <a href="{% url 'animals:details' app.animal.id %}"
+               style="display:flex;align-items:center;gap:12px;flex-shrink:0;text-decoration:none;color:inherit;">
+              {% with photo=app.animal.photos.first %}
+                {% if photo %}
+                  <img src="{{ photo.image.url }}" alt="{{ app.animal.name }}"
+                       style="width:64px;height:64px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0;" />
+                {% else %}
+                  <div style="width:64px;height:64px;border-radius:var(--r-sm);background:var(--cream2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">
+                    {% if app.animal.animal_type == 'cat' %}🐈{% else %}🐕{% endif %}
+                  </div>
+                {% endif %}
+              {% endwith %}
+              <div>
+                <div style="font-weight:800;font-size:16px;">{{ app.animal.name }}</div>
+                <div style="font-size:13px;color:var(--muted);">{{ app.animal.age_display }}, {{ app.animal.get_sex_display|lower }}</div>
+              </div>
+            </a>
+
+            <!-- Тип заявки -->
+            <div style="flex-shrink:0;">
+              <span class="badge {% if app.title == 'take_home' %}badge--red{% else %}badge--yellow{% endif %}" style="font-size:13px;padding:6px 14px;">
+                {% if app.title == 'take_home' %}🏠 Забрать домой{% else %}💛 Стать спонсором{% endif %}
+              </span>
+            </div>
+
+            <!-- Заявитель -->
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Заявитель</div>
+              <a href="{% url 'users:user_detail' app.owner.id %}"
+                 style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;margin-bottom:10px;">
+                {% if app.owner.avatar %}
+                  <img src="{{ app.owner.avatar.url }}" alt=""
+                       style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />
+                {% else %}
+                  <div class="avatar-circle" style="width:32px;height:32px;font-size:12px;">
+                    {{ app.owner.name|first|upper }}
+                  </div>
+                {% endif %}
+                <span style="font-weight:700;font-size:14px;">
+                  {% if app.owner.name %}{{ app.owner.name }} {{ app.owner.surname }}{% else %}{{ app.owner.username }}{% endif %}
+                </span>
+              </a>
+
+              <!-- Контакты -->
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                {% if app.phone %}
+                  <div style="font-size:13px;color:var(--muted);">📞 {{ app.phone }}</div>
+                {% endif %}
+                {% if app.telegram %}
+                  <div style="font-size:13px;color:var(--muted);">
+                    ✈️ <a href="https://t.me/{{ app.telegram }}" style="color:var(--red);">@{{ app.telegram }}</a>
+                  </div>
+                {% endif %}
+                {% if app.vk %}
+                  <div style="font-size:13px;color:var(--muted);">
+                    🔵 <a href="{{ app.vk }}" target="_blank" style="color:var(--red);">VK</a>
+                  </div>
+                {% endif %}
+                {% if not app.phone and not app.telegram and not app.vk %}
+                  <div style="font-size:13px;color:var(--muted);">Контакты не указаны</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Комментарий -->
+            {% if app.description %}
+              <div style="flex:1;min-width:200px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;">Комментарий</div>
+                <div style="font-size:14px;line-height:1.5;color:var(--dark);">{{ app.description }}</div>
+              </div>
+            {% endif %}
+
+            <!-- Дата + удаление -->
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex-shrink:0;">
+              <div style="font-size:12px;color:var(--muted);">{{ app.created_at|date:"d.m.Y H:i" }}</div>
+
+              <form method="post" action="{% url 'events:delete_application' app.id %}"
+                    onsubmit="return confirm('Удалить заявку от {{ app.owner.username }}?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm"
+                        style="color:var(--red);border-color:var(--red);">
+                  🗑 Удалить
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state__icon">📭</div>
+      <h3>Заявок пока нет</h3>
+      <p>Когда кто-то подаст заявку на вашего питомца — она появится здесь</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

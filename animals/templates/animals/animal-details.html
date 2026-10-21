@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ animal.name }} — Дорога домой{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<div class="page page--full">
+
+  <div style="margin-bottom:28px;font-size:14px;color:var(--muted);">
+    <a href="{% url 'animals:animal_list' %}" style="color:var(--red);font-weight:700;">← Все питомцы</a>
+  </div>
+
+  <div class="animal-detail">
+
+    <!-- LEFT: Gallery -->
+    <div>
+      <div class="animal-gallery__main">
+        {% with photos=animal.photos.all %}
+          {% if photos %}
+            <img id="gallery-main-img" src="{{ photos.0.image.url }}" alt="{{ animal.name }}" />
+          {% else %}
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:100px;background:var(--cream2);border-radius:var(--r);">
+              {% if animal.animal_type == 'cat' %}🐈{% else %}🐕{% endif %}
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      {% if animal.photos.count > 1 %}
+      <div class="animal-gallery__thumbs">
+        {% for photo in animal.photos.all|slice:":4" %}
+          <div class="animal-gallery__thumb">
+            <img src="{{ photo.image.url }}" alt="{{ animal.name }}" />
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: Info -->
+    <div class="animal-info" style="position:relative;">
+
+      <!-- ❤️ Кнопка избранного — вверху правого блока -->
+      {% if user.is_authenticated %}
+        <button
+          id="fav-btn"
+          data-animal-id="{{ animal.id }}"
+          style="
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform .15s;
+            padding: 0;
+            line-height: 1;
+          "
+          title="{% if user in animal.interested_users.all %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+        >
+          <span id="fav-heart">
+            {% if user in animal.interested_users.all %}❤️{% else %}🤍{% endif %}
+          </span>
+        </button>
+      {% endif %}
+
+      <!-- Name + status -->
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px;padding-right:60px;">
+        <div class="animal-info__name" style="margin-bottom:0;">{{ animal.name }}</div>
+        {% if animal.status == 'home' %}
+          <span class="badge badge--green" style="font-size:13px;padding:5px 14px;font-weight:500;">✅ Уже нашёл дом</span>
+        {% endif %}
+      </div>
+
+      <div class="animal-info__meta">
+        {{ animal.age_display }}, {{ animal.get_sex_display|lower }}
+      </div>
+
+      <!-- Sterilized / Vaccinated -->
+      <div class="animal-badges">
+        {% if animal.sex == 'male' %}
+          <div class="animal-badge {% if animal.castration %}animal-badge--yes{% else %}animal-badge--no{% endif %}">
+            {% if animal.castration %}Кастрирован{% else %}Не кастрирован{% endif %}
+          </div>
+          <div class="animal-badge {% if animal.vaccine %}animal-badge--yes{% else %}animal-badge--no{% endif %}">
+            {% if animal.vaccine %}Вакцинирован{% else %}Не вакцинирован{% endif %}
+          </div>
+        {% else %}
+          <div class="animal-badge {% if animal.castration %}animal-badge--yes{% else %}animal-badge--no{% endif %}">
+            {% if animal.castration %}Стерилизована{% else %}Не стерилизована{% endif %}
+          </div>
+          <div class="animal-badge {% if animal.vaccine %}animal-badge--yes{% else %}animal-badge--no{% endif %}">
+            {% if animal.vaccine %}Вакцинирована{% else %}Не вакцинирована{% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Description -->
+      {% if animal.description %}
+        <div class="animal-info__desc" style="
+          font-size: 14px;
+          line-height: 1.6;
+          word-break: break-word;
+          white-space: normal;
+        ">
+          {{ animal.description|linebreaksbr }}
+        </div>
+      {% endif %}
+
+      <!-- Character -->
+      {% if animal.character %}
+        <div class="char-tags" style="margin-bottom:28px;">
+          {% for trait in animal.character %}
+            <span class="char-tag">
+              {% if trait == 'friendly' %}Дружелюбный
+              {% elif trait == 'playful' %}Игривый
+              {% elif trait == 'calm' %}Спокойный
+              {% elif trait == 'active' %}Активный
+              {% elif trait == 'shy' %}Застенчивый
+              {% elif trait == 'affectionate' %}Ласковый
+              {% elif trait == 'independent' %}Независимый
+              {% elif trait == 'curious' %}Любопытный
+              {% elif trait == 'gentle' %}Нежный
+              {% elif trait == 'brave' %}Смелый
+              {% else %}{{ trait }}
+              {% endif %}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Action buttons -->
+      {% if animal.status == 'searching' %}
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:nowrap;margin-bottom:20px;">
+          <a href="{% url 'events:create_application' %}?animal_id={{ animal.id }}&app_type=take_home"
+             class="btn btn-red btn-xl"
+             style="flex:1;white-space:nowrap;text-align:center;">
+            Забрать домой
+          </a>
+          <a href="{% url 'events:create_application' %}?animal_id={{ animal.id }}&app_type=become_sponsor"
+             class="btn btn-dark btn-xl"
+             style="flex:1;white-space:nowrap;text-align:center;">
+            Стать спонсором
+          </a>
+        </div>
+      {% endif %}
+
+      {% if user == animal.owner %}
+        <div style="margin-top:14px;">
+          <a href="{% url 'animals:edit' animal.id %}" class="btn btn-ghost btn-sm">✏️ Редактировать</a>
+      
+          <a href="{% url 'animals:delete' animal.id %}"
+            class="btn btn-ghost btn-sm"
+            style="margin-top:10px;color:red;border-color:red;">
+            🗑 Удалить
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if user.is_authenticated %}
+<script>
+(function () {
+  var btn   = document.getElementById('fav-btn');
+  var heart = document.getElementById('fav-heart');
+  if (!btn) return;
+
+  btn.addEventListener('click', function () {
+    var animalId = btn.dataset.animalId;
+
+    fetch('/animals/' + animalId + '/toggle-favorite/', {
+      method:  'POST',
+      headers: {
+        'X-CSRFToken':     '{{ csrf_token }}',
+        'X-Requested-With':'XMLHttpRequest',
+        'Content-Type':    'application/json',
+      },
+      credentials: 'same-origin',
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.status === 'ok' || 'is_favorite' in data) {
+        heart.textContent = data.is_favorite ? '❤️' : '🤍';
+        btn.title = data.is_favorite ? 'Убрать из избранного' : 'Добавить в избранное';
+        /* мягкая анимация */
+        btn.style.transform = 'scale(1.25)';
+        setTimeout(function () { btn.style.transform = 'scale(1)'; }, 180);
+      }
+    })
+    .catch(function (e) { console.error('Favorite error:', e); });
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

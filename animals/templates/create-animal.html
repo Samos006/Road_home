@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Редактировать питомца{% else %}Добавить питомца{% endif %} — Дорога домой{% endblock %}
+
+{% block content %}
+
+<style>
+.help-text {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+  display: block;
+}
+</style>
+
+<div class="page page--narrow">
+  <div class="form-card">
+    <h1>{% if is_edit %}Редактировать питомца{% else %}Добавить питомца{% endif %}</h1>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-error-box">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+      {% endif %}
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>{{ form.name.label }}</label>
+          {{ form.name }}
+          {% if form.name.errors %}
+            <ul class="errorlist">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>{{ form.age.label }}</label>
+          {{ form.age }}
+          <small class="help-text">Укажите возраст питомца в месяцах</small>
+          {% if form.age.errors %}
+            <ul class="errorlist">{% for e in form.age.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>{{ form.sex.label }}</label>
+          {{ form.sex }}
+          {% if form.sex.errors %}
+            <ul class="errorlist">{% for e in form.sex.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>{{ form.animal_type.label }}</label>
+          {{ form.animal_type }}
+          {% if form.animal_type.errors %}
+            <ul class="errorlist">{% for e in form.animal_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>{{ form.color.label }}</label>
+          {{ form.color }}
+          {% if form.color.errors %}
+            <ul class="errorlist">{% for e in form.color.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>{{ form.status.label }}</label>
+          {{ form.status }}
+          {% if form.status.errors %}
+            <ul class="errorlist">{% for e in form.status.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group" style="display:flex;gap:28px;align-items:center;padding-top:20px;">
+          <label class="form-checkbox-item">{{ form.vaccine }} {{ form.vaccine.label }}</label>
+          <label class="form-checkbox-item">{{ form.castration }} {{ form.castration.label }}</label>
+        </div>
+
+        <div class="form-group form-group--full">
+          <label>{{ form.character.label }}</label>
+          <div class="form-checkbox-grid">
+            {% for widget in form.character %}
+              <label class="form-checkbox-item">{{ widget.tag }} {{ widget.choice_label }}</label>
+            {% endfor %}
+          </div>
+          {% if form.character.errors %}
+            <ul class="errorlist">{% for e in form.character.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group form-group--full">
+          <label>{{ form.description.label }}</label>
+          {{ form.description }}
+          {% if form.description.errors %}
+            <ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group form-group--full">
+          <label>{{ form.photos.label }} (до 5 фото)</label>
+          {{ form.photos }}
+          {% if form.photos.errors %}
+            <ul class="errorlist">{% for e in form.photos.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'animals:animal_list' %}" class="btn btn-ghost">Отмена</a>
+        <button type="submit" class="btn btn-red">
+          {% if is_edit %}Сохранить{% else %}Добавить питомца{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

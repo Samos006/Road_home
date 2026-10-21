@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}События — Дорога домой{% endblock %}
+{% block nav_events %}active{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="list-header">
+    <h1>Нужна <span style="color:var(--red);">помощь</span></h1>
+    {% if user.is_authenticated %}
+      <a href="{% url 'events:create_event' %}" class="btn btn-red">+ Добавить событие</a>
+    {% endif %}
+  </div>
+
+  <div class="filter-wrapper">
+    <button class="filter-toggle-btn" type="button">
+       Фильтры <span class="arrow">▼</span>
+    </button>
+    <div class="filter-panel">
+      <form method="get" action="">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Срочность</label>
+            <select name="urgency">
+              <option value="">Любая</option>
+              <option value="high"   {% if request.GET.urgency == 'high'   %}selected{% endif %}>🔴 Высокая</option>
+              <option value="medium" {% if request.GET.urgency == 'medium' %}selected{% endif %}>🟡 Средняя</option>
+              <option value="low"    {% if request.GET.urgency == 'low'    %}selected{% endif %}>🟢 Низкая</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>От кого</label>
+            <select name="role">
+              <option value="">Все</option>
+              <option value="shelter" {% if request.GET.role == 'shelter' %}selected{% endif %}>🏠 Приюты</option>
+              <option value="user"    {% if request.GET.role == 'user'    %}selected{% endif %}>🤝 Волонтёры</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <a href="{% url 'events:event_list' %}" class="btn btn-ghost btn-sm">Сбросить</a>
+          <button type="submit" class="btn btn-red btn-sm">Применить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if events %}
+    <div class="events-grid">
+      {% for event in events %}
+        <a href="{% url 'events:details_event' event.id %}" class="event-card" style="text-decoration:none;">
+          <div class="event-card__author">
+            {% if event.owner.avatar %}
+              <img class="avatar-circle" src="{{ event.owner.avatar.url }}" alt="" style="width:42px;height:42px;" />
+            {% else %}
+              <div class="avatar-circle" style="width:42px;height:42px;font-size:16px;">{{ event.owner.name|first|upper }}</div>
+            {% endif %}
+            <div>
+              <div class="event-card__author-name">
+                {% if event.owner.name %}{{ event.owner.name }} {{ event.owner.surname }}{% else %}{{ event.owner.username }}{% endif %}
+              </div>
+              <div class="event-card__author-role">
+                {% if event.owner.role == 'shelter' %}🏠 Приют{% else %}🤝 Волонтёр{% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="event-card__title">{{ event.title }}</div>
+          <div class="event-card__desc">{{ event.description }}</div>
+          <div class="event-card__footer">
+            <span class="badge {% if event.urgency == 'high' %}badge--red{% elif event.urgency == 'medium' %}badge--yellow{% else %}badge--green{% endif %}">
+              {% if event.urgency == 'high' %}🔴{% elif event.urgency == 'medium' %}🟡{% else %}🟢{% endif %}
+              {{ event.get_urgency_display }}
+            </span>
+            {% if event.required_help %}
+              <span class="badge badge--blue">{{ event.get_required_help_display }}</span>
+            {% endif %}
+            <span class="badge">до {{ event.end_date|date:"d.m.Y" }}</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">‹</a>{% endif %}
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}<span class="current">{{ num }}</span>
+        {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}<a href="?page={{ num }}">{{ num }}</a>{% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">›</a>{% endif %}
+    </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state__icon">📋</div>
+      <h3>Событий не найдено</h3>
+      <p>Пока нет активных запросов помощи</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

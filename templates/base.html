@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Дорога домой{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh;">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header__inner">
+
+    <!-- Logo -->
+    <a href="{% url 'home' %}" class="header__logo">
+
+      <div class="header__logo-icon">
+        <img src="{% static 'img/logo.jpg' %}">
+      </div>
+
+      <div class="header__logo-text">
+        <div class="header__logo-title">
+          Дорога домой
+        </div>
+
+        <div class="header__logo-sub">
+          объединение Тюменских приютов
+        </div>
+      </div>
+
+    </a>
+
+    <nav class="header__nav">
+      <a href="{% url 'animals:animal_list' %}" class="{% block nav_home %}{% endblock %}">Хочу домой</a>
+      <a href="{% url 'users:group_list' %}" class="{% block nav_groups %}{% endblock %}">Волонтёрские группы</a>
+      <a href="{% url 'events:event_list' %}" class="{% block nav_events %}{% endblock %}">Нужна помощь</a>
+    </nav>
+
+    <div class="header__user">
+      {% if user.is_authenticated %}
+        <a href="{% url 'users:user_detail' user.id %}" style="display:flex;align-items:center;gap:10px;">
+          {% if user.avatar %}
+            <img class="avatar-circle" src="{{ user.avatar.url }}" alt="{{ user.username }}" style="width:40px;height:40px;" />
+          {% else %}
+            <div class="avatar-circle" style="width:40px;height:40px;font-size:15px;">{{ user.name|first|upper }}</div>
+          {% endif %}
+          <span class="header__user-name">
+            {% if user.name and user.surname %}{{ user.name }} {{ user.surname }}{% else %}{{ user.username }}{% endif %}
+          </span>
+        </a>
+      {% else %}
+        <div class="header__auth">
+          <a href="{% url 'users:login' %}" class="ghost">Войти</a>
+          <a href="{% url 'users:register' %}" class="cta">Регистрация</a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</header>
+
+{% if messages %}
+<div class="messages">
+  {% for message in messages %}
+    <div class="message message--{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<main style="flex:1;">{% block content %}{% endblock %}</main>
+
+<!-- FOOTER — красная полоска всегда у нижнего края -->
+<footer style="background:var(--red); height:10px; width:100%; flex-shrink:0;"></footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

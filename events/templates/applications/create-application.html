@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Подать заявку — Дорога домой{% endblock %}
+
+{% block content %}
+<div class="page" style="display:flex;justify-content:center;padding-top:48px;">
+  <div class="application-card">
+    <h1>Подать заявку</h1>
+    {% if animal %}
+      <p class="subtitle">Питомец: <strong style="color:var(--red);">{{ animal.name }}</strong></p>
+    {% else %}
+      <p class="subtitle">Заполните форму, и мы свяжемся с вами</p>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if animal %}<input type="hidden" name="animal_id" value="{{ animal.id }}" />{% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="form-error-box">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+      {% endif %}
+
+      <div class="type-selector">
+        <button type="button" class="type-selector__btn active" data-value="take_home">🏠 Забрать домой</button>
+        <button type="button" class="type-selector__btn" data-value="become_sponsor">💛 Стать спонсором</button>
+      </div>
+      <input type="hidden" name="title" id="id_title" value="take_home" />
+
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px;">Контакты (хотя бы один)</div>
+
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>{{ form.phone.label }}</label>
+        {{ form.phone }}
+        {% if form.phone.errors %}<ul class="errorlist">{% for e in form.phone.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>{{ form.telegram.label }}</label>
+        {{ form.telegram }}
+        {% if form.telegram.errors %}<ul class="errorlist">{% for e in form.telegram.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>{{ form.vk.label }}</label>
+        {{ form.vk }}
+        {% if form.vk.errors %}<ul class="errorlist">{% for e in form.vk.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group" style="margin-bottom:24px;">
+        <label>Дополнительный комментарий</label>
+        {{ form.description }}
+        {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-red btn-lg" style="width:100%;">Отправить заявку</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var appType = "{{ request.GET.app_type|default:'take_home' }}";
+document.querySelectorAll('.type-selector__btn').forEach(function(btn) {
+  btn.classList.toggle('active', btn.dataset.value === appType);
+});
+document.getElementById('id_title').value = appType;
+</script>
+{% endblock %}

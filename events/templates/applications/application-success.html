@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Заявка отправлена — Дорога домой{% endblock %}
+
+{% block content %}
+<div class="success-page">
+  <div class="success-card">
+    <div class="success-card__icon">🎉</div>
+    <h1>Заявка отправлена!</h1>
+    <p>Спасибо! Мы получили вашу заявку и свяжемся с вами в ближайшее время по указанным контактам.</p>
+    <a href="{% url 'animals:animal_list' %}" class="btn btn-red btn-lg">Смотреть питомцев</a>
+  </div>
+</div>
+{% endblock %}

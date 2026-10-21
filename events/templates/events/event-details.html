@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} — Дорога домой{% endblock %}
+{% block nav_events %}active{% endblock %}
+
+{% block content %}
+<div class="page page--medium">
+  <div style="margin-bottom:24px;font-size:14px;">
+    <a href="{% url 'events:event_list' %}" style="color:var(--red);font-weight:700;">← Все события</a>
+  </div>
+
+  <div class="event-detail">
+    <!-- Author -->
+    <div class="author-sidebar" style="text-align:center;">
+
+    {% if event.owner.avatar %}
+      <img src="{{ event.owner.avatar.url }}" alt=""
+          style="width:96px;height:96px;border-radius:50%;object-fit:cover;margin:0 auto 16px;display:block;" />
+    {% else %}
+      <div class="avatar-circle"
+          style="width:96px;height:96px;font-size:38px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+        {{ event.owner.name|first|upper }}
+      </div>
+    {% endif %}
+
+    <div class="author-sidebar__name" style="text-align:center;">
+      {% if event.owner.name %}
+        {{ event.owner.name }} {{ event.owner.surname }}
+      {% else %}
+        {{ event.owner.username }}
+      {% endif %}
+    </div>
+
+    <div class="author-sidebar__role" style="text-align:center;">
+      {% if event.owner.role == 'shelter' %}🏠 Приют{% else %}🤝 Волонтёр{% endif %}
+    </div>
+
+    <div style="margin-top:16px; text-align:center;">
+
+      {% if event.owner.phone %}
+        <div class="contact-item">📞 {{ event.owner.phone }}</div>
+      {% endif %}
+
+      {% if event.owner.telegram %}
+        <div class="contact-item">
+          ✈️ <a href="https://t.me/{{ event.owner.telegram }}">@{{ event.owner.telegram }}</a>
+        </div>
+      {% endif %}
+
+      {% if event.owner.vk %}
+        <div class="contact-item">
+          🔵 <a href="{{ event.owner.vk }}" target="_blank">VK</a>
+        </div>
+      {% endif %}
+
+      {% if not event.owner.phone and not event.owner.telegram and not event.owner.vk %}
+        <div class="contact-item" style="color:var(--muted);">Контакты не указаны</div>
+      {% endif %}
+
+    </div>
+
+    <div style="margin-top:20px;">
+      <a href="{% url 'users:user_detail' event.owner.id %}"
+        class="btn btn-ghost"
+        style="width:100%;">
+        Профиль
+      </a>
+    </div>
+
+  </div>
+    <!-- Content -->
+    <div class="content-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
+        <h1>{{ event.title }}</h1>
+        {% if user == event.owner %}
+          <a href="{% url 'events:edit_event' event.id %}" class="btn btn-ghost btn-sm">✏️ Редактировать</a>
+        {% endif %}
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+        <span class="badge {% if event.urgency == 'high' %}badge--red{% elif event.urgency == 'medium' %}badge--yellow{% else %}badge--green{% endif %}">
+          {% if event.urgency == 'high' %}🔴{% elif event.urgency == 'medium' %}🟡{% else %}🟢{% endif %}
+          {{ event.get_urgency_display }} срочность
+        </span>
+        <span class="badge badge--dark">{{ event.get_status_display }}</span>
+      </div>
+
+      <div class="content-card__desc">{{ event.description }}</div>
+
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;">Детали</div>
+      <div class="detail-list">
+        {% if event.required_help %}
+          <div class="detail-item">
+            <span class="detail-item__label">Что нужно</span>
+            <span>{{ event.get_required_help_display }}</span>
+          </div>
+        {% endif %}
+        <div class="detail-item">
+          <span class="detail-item__label">Срок</span>
+          <span>{{ event.start_date|date:"d.m.Y" }} — {{ event.end_date|date:"d.m.Y" }}</span>
+        </div>
+        {% if event.place %}
+          <div class="detail-item">
+            <span class="detail-item__label">Место</span>
+            <span>{{ event.place }}</span>
+          </div>
+        {% endif %}
+        <div class="detail-item">
+          <span class="detail-item__label">Добавлено</span>
+          <span>{{ event.created_at|date:"d.m.Y" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

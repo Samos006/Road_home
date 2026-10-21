@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Питомцы — Дорога домой{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="list-header">
+    <h1>Питомцы <span style="color:var(--red);">ищут дом</span></h1>
+    {% if user.is_authenticated %}
+      <a href="{% url 'animals:create' %}" class="btn btn-red">+ Добавить питомца</a>
+    {% endif %}
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-wrapper">
+    <button class="filter-toggle-btn" type="button">
+       Фильтры <span class="arrow">▼</span>
+    </button>
+
+    <div class="filter-panel">
+      <form method="get" action="">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Тип животного</label>
+            <select name="animal_type">
+              <option value="">Все</option>
+              <option value="cat" {% if request.GET.animal_type == 'cat' %}selected{% endif %}>🐈 Кошка</option>
+              <option value="dog" {% if request.GET.animal_type == 'dog' %}selected{% endif %}>🐕 Собака</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Пол</label>
+            <select name="sex">
+              <option value="">Любой</option>
+              <option value="male"   {% if request.GET.sex == 'male'   %}selected{% endif %}>Мальчик</option>
+              <option value="female" {% if request.GET.sex == 'female' %}selected{% endif %}>Девочка</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Окрас</label>
+            <select name="color">
+              <option value="">Любой</option>
+              <option value="black"    {% if request.GET.color == 'black'    %}selected{% endif %}>Чёрный</option>
+              <option value="white"    {% if request.GET.color == 'white'    %}selected{% endif %}>Белый</option>
+              <option value="gray"     {% if request.GET.color == 'gray'     %}selected{% endif %}>Серый</option>
+              <option value="ginger"   {% if request.GET.color == 'ginger'   %}selected{% endif %}>Рыжий</option>
+              <option value="brown"    {% if request.GET.color == 'brown'    %}selected{% endif %}>Коричневый</option>
+              <option value="tricolor" {% if request.GET.color == 'tricolor' %}selected{% endif %}>Трёхцветный</option>
+              <option value="mixed"    {% if request.GET.color == 'mixed'    %}selected{% endif %}>Смешанный</option>
+              <option value="other"    {% if request.GET.color == 'other'    %}selected{% endif %}>Другой</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Характер</label>
+            <select name="character">
+              <option value="">Любой</option>
+              <option value="calm">Спокойный</option>
+              <option value="active">Активный</option>
+              <option value="playful">Игривый</option>
+              <option value="friendly">Дружелюбный</option>
+              <option value="affectionate">Ласковый</option>
+              <option value="shy">Стеснительный</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Возраст от</label>
+            <input type="number" name="age_min" min="0" placeholder="0" value="{{ request.GET.age_min }}">
+          </div>
+          <div class="filter-group">
+            <label>Возраст до</label>
+            <input type="number" name="age_max" min="0" placeholder="20" value="{{ request.GET.age_max }}">
+          </div>
+        </div>
+        <div class="filter-checkboxes">
+          <label>
+            <input type="checkbox" name="vaccine" value="1" {% if request.GET.vaccine %}checked{% endif %}>
+            Вакцинирован
+          </label>
+          <label>
+            <input type="checkbox" name="castration" value="1" {% if request.GET.castration %}checked{% endif %}>
+            Стерилизован
+          </label>
+        </div>
+        <div class="filter-actions">
+          <a href="{% url 'animals:animal_list' %}" class="btn btn-ghost btn-sm">Сбросить</a>
+          <button type="submit" class="btn btn-red btn-sm">Применить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  {% if animals %}
+    <div class="animals-grid">
+      {% for animal in animals %}
+        {% if animal.status != 'home' %}   {# ← скрываем тех, кто уже нашёл дом #}
+        {% with photo=animal.photos.first %}
+        <div class="animal-card">
+          <a href="{% url 'animals:details' animal.id %}">
+            <div class="animal-card__img-wrap">
+              {% if photo %}
+                <img src="{{ photo.image.url }}" alt="{{ animal.name }}" loading="lazy" />
+              {% else %}
+                <div class="animal-card__img-placeholder">
+                  {% if animal.animal_type == 'cat' %}🐈{% else %}🐕{% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </a>
+
+          {% if user.is_authenticated %}
+            {% csrf_token %}
+            <button class="animal-card__fav {% if user in animal.interested_users.all %}active{% endif %}"
+                    data-animal-id="{{ animal.id }}" aria-label="В избранное">
+              <span class="heart-icon">{% if user in animal.interested_users.all %}❤️{% else %}🤍{% endif %}</span>
+            </button>
+          {% endif %}
+
+          <a href="{% url 'animals:details' animal.id %}" class="animal-card__info"
+             style="display:block; padding-left:12px;">
+            <div class="animal-card__name" style="margin-left:0;">{{ animal.name }}</div>
+            <div class="animal-card__meta" style="margin-left:0;">
+                <span>{{ animal.get_sex_display }}</span>
+                <span>·</span>
+                <span>{{ animal.age_display }}</span>
+            </div>
+          </a>
+        </div>
+        {% endwith %}
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">‹</a>
+      {% endif %}
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}
+          <span class="current">{{ num }}</span>
+        {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+          <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">›</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state__icon">🐾</div>
+      <h3>Питомцы не найдены</h3>
+      <p>Попробуйте изменить фильтры</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

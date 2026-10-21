@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Редактировать профиль — Дорога домой{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+{% endblock %}
+
+{% block content %}
+<div class="page page--narrow">
+  <div class="form-card">
+    <h1>Редактировать профиль</h1>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-error-box">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+      {% endif %}
+
+      <div class="form-grid">
+        <div class="form-group"><label>{{ form.name.label }}</label>{{ form.name }}{% if form.name.errors %}<ul class="errorlist">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+        <div class="form-group"><label>{{ form.surname.label }}</label>{{ form.surname }}{% if form.surname.errors %}<ul class="errorlist">{% for e in form.surname.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+        <div class="form-group"><label>{{ form.email.label }}</label>{{ form.email }}{% if form.email.errors %}<ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+        <div class="form-group"><label>{{ form.phone.label }}</label>{{ form.phone }}{% if form.phone.errors %}<ul class="errorlist">{% for e in form.phone.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+        <div class="form-group"><label>{{ form.telegram.label }}</label>{{ form.telegram }}{% if form.telegram.errors %}<ul class="errorlist">{% for e in form.telegram.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+        <div class="form-group"><label>{{ form.vk.label }}</label>{{ form.vk }}{% if form.vk.errors %}<ul class="errorlist">{% for e in form.vk.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+
+        <div class="form-group form-group--full">
+          <label>{{ form.about.label }}</label>{{ form.about }}
+          {% if form.about.errors %}<ul class="errorlist">{% for e in form.about.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+
+        <!-- ═══ Аватар с кропером ═══ -->
+        <div class="form-group form-group--full">
+          <label>Аватар</label>
+
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:10px;">
+
+            <!-- Превью (текущее или после кропа) -->
+            {% if request.user.avatar %}
+              <img id="avatar-preview" src="{{ request.user.avatar.url }}"
+                   style="width:80px;height:80px;border-radius:50%;
+                          object-fit:cover;border:3px solid var(--border);" />
+            {% else %}
+              <img id="avatar-preview" src=""
+                   style="width:80px;height:80px;border-radius:50%;
+                          object-fit:cover;border:3px solid var(--border);display:none;" />
+            {% endif %}
+
+            <div>
+              <!-- Кнопка-триггер -->
+              <label for="avatar-input" class="btn btn-ghost btn-sm" style="cursor:pointer;">
+                📷 Выбрать фото
+              </label>
+              <input id="avatar-input" type="file" accept="image/*" style="display:none;" />
+
+              <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+                Будет обрезано 1:1 (квадрат)
+              </div>
+            </div>
+          </div>
+
+          <!-- Скрытый реальный input формы — Django его отправит на сервер -->
+          <div style="display:none;">{{ form.avatar }}</div>
+          {# Даём ему id чтобы JS подменил файл #}
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              var realField = document.querySelector('#id_avatar');
+              if (realField) realField.id = 'avatar-real-input';
+            });
+          </script>
+
+          {% if form.avatar.errors %}
+            <ul class="errorlist">{% for e in form.avatar.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'users:user_detail' request.user.id %}" class="btn btn-ghost">Отмена</a>
+        <button type="submit" class="btn btn-red">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script src="{% static 'js/crop.js' %}"></script>
+{% endblock %}

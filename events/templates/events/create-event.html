@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Редактировать событие{% else %}Создать событие{% endif %} — Дорога домой{% endblock %}
+{% block nav_events %}active{% endblock %}
+
+{% block content %}
+<div class="page page--narrow">
+  <div class="form-card">
+    <h1>{% if is_edit %}Редактировать событие{% else %}Создать событие{% endif %}</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-error-box">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+      {% endif %}
+
+      <div class="form-grid">
+        <div class="form-group form-group--full">
+          <label>{{ form.title.label }}</label>
+          {{ form.title }}
+          {% if form.title.errors %}<ul class="errorlist">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>{{ form.urgency.label }}</label>
+          {{ form.urgency }}
+          {% if form.urgency.errors %}<ul class="errorlist">{% for e in form.urgency.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>{{ form.status.label }}</label>
+          {{ form.status }}
+          {% if form.status.errors %}<ul class="errorlist">{% for e in form.status.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>{{ form.required_help.label }}</label>
+          {{ form.required_help }}
+          {% if form.required_help.errors %}<ul class="errorlist">{% for e in form.required_help.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>{{ form.place.label }}</label>
+          {{ form.place }}
+          {% if form.place.errors %}<ul class="errorlist">{% for e in form.place.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>{{ form.start_date.label }}</label>
+          {{ form.start_date }}
+          {% if form.start_date.errors %}<ul class="errorlist">{% for e in form.start_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>{{ form.end_date.label }}</label>
+          {{ form.end_date }}
+          {% if form.end_date.errors %}<ul class="errorlist">{% for e in form.end_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group form-group--full">
+          <label>{{ form.description.label }}</label>
+          {{ form.description }}
+          {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'events:event_list' %}" class="btn btn-ghost">Отмена</a>
+        <button type="submit" class="btn btn-red">{% if is_edit %}Сохранить{% else %}Создать событие{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

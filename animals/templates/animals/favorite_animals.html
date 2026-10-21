@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Избранное — Дорога домой{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="list-header">
+    <h1>❤️ <span style="color:var(--red);">Избранное</span></h1>
+    <a href="{% url 'animals:animal_list' %}" class="btn btn-ghost">← Все питомцы</a>
+  </div>
+
+  {% if animals %}
+    <div class="animals-grid">
+      {% for animal in animals %}
+        {% with photo=animal.photos.first %}
+        <div class="animal-card">
+          <a href="{% url 'animals:details' animal.id %}">
+            <div class="animal-card__img-wrap">
+              {% if photo %}
+                <img src="{{ photo.image.url }}" alt="{{ animal.name }}" loading="lazy" />
+              {% else %}
+                <div class="animal-card__img-placeholder">{% if animal.animal_type == 'cat' %}🐈{% else %}🐕{% endif %}</div>
+              {% endif %}
+            </div>
+          </a>
+          {% csrf_token %}
+          <button class="animal-card__fav active" data-animal-id="{{ animal.id }}">
+            <span class="heart-icon">❤️</span>
+          </button>
+            <a href="{% url 'animals:details' animal.id %}" class="animal-card__info"
+              style="display:block; padding-left:12px;">
+              
+              <div class="animal-card__name" style="margin-left:0;">
+                {{ animal.name }}
+              </div>
+
+              <div class="animal-card__meta" style="margin-left:0;">
+                  <span>{{ animal.get_sex_display }}</span>
+                  <span>·</span>
+                  <span>{{ animal.age_display }}</span>
+              </div>
+
+            </a>
+        </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">‹</a>{% endif %}
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}<span class="current">{{ num }}</span>
+        {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}<a href="?page={{ num }}">{{ num }}</a>{% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">›</a>{% endif %}
+    </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state__icon">🤍</div>
+      <h3>Избранное пусто</h3>
+      <p>Нажмите на сердечко на карточке питомца, чтобы добавить в избранное</p>
+      <br><a href="{% url 'animals:animal_list' %}" class="btn btn-red">Смотреть питомцев</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if group.name %}{{ group.name }} {{ group.surname }}{% else %}{{ group.username }}{% endif %} — Дорога домой
+{% endblock %}
+{% block nav_groups %}active{% endblock %}
+
+{% block content %}
+<div class="page page--medium">
+  <div style="margin-bottom:24px;font-size:14px;">
+    <a href="{% url 'users:group_list' %}" style="color:var(--red);font-weight:700;">← Все группы</a>
+  </div>
+
+  <div class="group-detail-layout">
+    <!-- Sidebar -->
+    <div>
+      <div class="author-sidebar">
+        {% if group.avatar %}
+          <img src="{{ group.avatar.url }}" alt=""
+               style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:14px;display:block;" />
+        {% else %}
+          <div class="avatar-circle" style="width:80px;height:80px;font-size:32px;margin-bottom:14px;">
+            {{ group.name|first|upper }}
+          </div>
+        {% endif %}
+
+        <div class="author-sidebar__name">
+          {% if group.name %}{{ group.name }} {{ group.surname }}{% else %}{{ group.username }}{% endif %}
+        </div>
+        <div class="author-sidebar__role">🏠 Приют / Волонтёрская группа</div>
+
+        {% if group.about %}
+          <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-top:12px;margin-bottom:16px;">{{ group.about }}</p>
+        {% endif %}
+
+        <div>
+          {% if group.phone %}<div class="contact-item">📞 {{ group.phone }}</div>{% endif %}
+          {% if group.telegram %}<div class="contact-item">✈️ <a href="https://t.me/{{ group.telegram }}">@{{ group.telegram }}</a></div>{% endif %}
+          {% if group.vk %}<div class="contact-item">🔵 <a href="{{ group.vk }}" target="_blank">VK</a></div>{% endif %}
+          {% if group.email %}<div class="contact-item">✉️ {{ group.email }}</div>{% endif %}
+          {% if not group.phone and not group.telegram and not group.vk and not group.email %}
+            <div class="contact-item" style="color:var(--muted);">Контакты не указаны</div>
+          {% endif %}
+        </div>
+
+        {% if group.events.all %}
+          <div style="margin-top:24px;">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px;">Льготы и предложения</div>
+            {% for event in group.events.all|slice:":5" %}
+              <a href="{% url 'events:details_event' event.id %}"
+                 style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--cream);border-radius:var(--r-sm);margin-bottom:6px;font-size:14px;text-decoration:none;color:var(--dark);border-left:2px solid var(--red);transition:background .15s;"
+                 onmouseover="this.style.background='var(--cream2)'" onmouseout="this.style.background='var(--cream)'">
+                <span style="flex:1;font-weight:600;">{{ event.title }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Album -->
+    <div>
+      <div class="section-card">
+        <h2>📸 Альбом воспитанников</h2>
+
+        <div class="album-filter" id="albumFilter">
+          <button class="album-filter-btn active" data-filter="all">Все</button>
+          <button class="album-filter-btn" data-filter="searching">Ищут дом</button>
+          <button class="album-filter-btn" data-filter="home">Нашли дом</button>
+        </div>
+
+        {% if group.animals.all %}
+          <div class="animals-grid" id="albumGrid" style="grid-template-columns:repeat(3,1fr);">
+            {% for animal in group.animals.all %}
+              {% with photo=animal.photos.first %}
+              <a href="{% url 'animals:details' animal.id %}"
+                 class="animal-card album-item" data-status="{{ animal.status }}">
+                <div class="animal-card__img-wrap">
+                  {% if photo %}<img src="{{ photo.image.url }}" alt="{{ animal.name }}" loading="lazy" />
+                  {% else %}<div class="animal-card__img-placeholder">{% if animal.animal_type == 'cat' %}🐈{% else %}🐕{% endif %}</div>{% endif %}
+                  {% if animal.status == 'home' %}
+                    <div style="position:absolute;top:8px;left:8px;background:rgba(46,53,50,.85);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">✓ Дома</div>
+                  {% endif %}
+                </div>
+                <div class="animal-card__info">
+                  <div class="animal-card__name">{{ animal.name }}</div>
+                  <div class="animal-card__meta" style="margin-left:0;">
+                      <span>{{ animal.get_sex_display }}</span>
+                      <span>·</span>
+                      <span>{{ animal.age_display }}</span>
+                  </div>
+                </div>
+              </a>
+              {% endwith %}
+            {% endfor %}
+          </div>
+          <div id="albumEmpty" style="display:none;text-align:center;padding:40px;color:var(--muted);">
+            <div style="font-size:48px;margin-bottom:12px;">🐾</div>
+            <div style="font-weight:700;">Питомцев не найдено</div>
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding:40px 0;">
+            <div class="empty-state__icon">🐾</div>
+            <h3>Питомцев ещё нет</h3>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var filterBtns = document.querySelectorAll('#albumFilter .album-filter-btn');
+var albumItems = document.querySelectorAll('.album-item');
+var albumEmpty = document.getElementById('albumEmpty');
+filterBtns.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    filterBtns.forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var filter = btn.dataset.filter;
+    var visible = 0;
+    albumItems.forEach(function(item) {
+      var show = filter === 'all' || item.dataset.status === filter;
+      item.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    if (albumEmpty) albumEmpty.style.display = visible === 0 ? 'block' : 'none';
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Дорога домой — объединение Тюменских приютов{% endblock %}
+
+{% block content %}
+<div class="page" style="padding-top: 40px;">
+
+  <!-- HERO -->
+  <div class="home-hero">
+    <div class="home-hero__content">
+      <div class="home-hero__eyebrow">Приют для бездомных животных</div>
+      <h1 class="home-hero__title">
+        Дорога домой
+      </h1>
+      <p class="home-hero__sub">
+        Объединение Тюменских приютов. Помогаем животным найти любящую семью с&nbsp;2026 года.
+      </p>
+
+      <div class="home-hero__stats">
+        <div>
+          <div class="hero-stat__num">{{ dogs_count }}</div>
+          <div class="hero-stat__label">Собачки</div>
+        </div>
+        <div>
+          <div class="hero-stat__num">{{ cats_count }}</div>
+          <div class="hero-stat__label">Кошечки</div>
+        </div>
+        <div>
+          <div class="hero-stat__num">{{ groups_count }}</div>
+          <div class="hero-stat__label">Группы</div>
+        </div>
+      </div>
+
+      <p style="font-size:12px;color:#8da098;letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-top:-8px;">
+        Любой из них может стать твоим
+      </p>
+
+      <div class="home-hero__actions">
+        <a href="{% url 'animals:animal_list' %}" class="btn btn-red btn-xl">Выбрать питомца</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'events:event_list' %}" class="btn btn-ghost btn-xl" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25);">Нужна помощь</a>
+        {% else %}
+          <a href="{% url 'users:register' %}" class="btn btn-ghost btn-xl" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25);">Вступить в сообщество</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="home-hero__img">
+      <img src="{% static 'img/hero.jpg' %}" alt="Кошка и собака" />
+    </div>
+  </div>
+
+  <!-- QUICK LINKS -->
+  <div class="home-links">
+    <a href="{% url 'animals:animal_list' %}" class="home-link-card">
+      <div class="home-link-card__icon"></div>
+      <div class="home-link-card__title">Хочу домой</div>
+      <div class="home-link-card__desc">Найти питомца, который ищет любящую семью</div>
+    </a>
+    <a href="{% url 'users:group_list' %}" class="home-link-card">
+      <div class="home-link-card__icon"></div>
+      <div class="home-link-card__title">Волонтёрские группы</div>
+      <div class="home-link-card__desc">Присоединиться к команде добровольцев Тюмени</div>
+    </a>
+    <a href="{% url 'events:event_list' %}" class="home-link-card">
+      <div class="home-link-card__icon"></div>
+      <div class="home-link-card__title">Нужна помощь</div>
+      <div class="home-link-card__desc">Актуальные события и запросы приюта</div>
+    </a>
+  </div>
+
+</div>
+{% endblock %}

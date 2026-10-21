@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Войти — Дорога домой{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Добро пожаловать</h1>
+    <p class="subtitle">Войдите в аккаунт Дороги домой</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-error-box">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>{% endif %}
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Имя пользователя</label>{{ form.username }}
+        {% if form.username.errors %}<ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group" style="margin-bottom:24px;">
+        <label>Пароль</label>{{ form.password }}
+        {% if form.password.errors %}<ul class="errorlist">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <button type="submit" class="btn btn-red" style="width:100%;">Войти</button>
+    </form>
+    <div class="auth-footer">Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Волонтёрские группы — Дорога домой{% endblock %}
+{% block nav_groups %}active{% endblock %}
+
+{% block content %}
+<div class="page page--medium">
+  <div class="list-header">
+    <h1>Волонтёрские <span style="color:var(--red);">группы</span></h1>
+  </div>
+
+  {% if groups %}
+    <div class="group-list">
+      {% for group in groups %}
+        <a href="{% url 'users:user_detail' group.id %}" class="group-card" style="text-decoration:none;">
+          {% if group.avatar %}
+            <img class="group-card__avatar" src="{{ group.avatar.url }}" alt="" />
+          {% else %}
+            <div class="avatar-circle group-card__avatar" style="font-size:24px;width:64px;height:64px;">
+              {{ group.name|first|upper }}
+            </div>
+          {% endif %}
+          <div class="group-card__body">
+            <div class="group-card__name">
+              {% if group.name %}{{ group.name }} {{ group.surname }}{% else %}{{ group.username }}{% endif %}
+            </div>
+            <div class="group-card__contacts">
+              {% if group.phone %}<span>📞 {{ group.phone }}</span>{% endif %}
+              {% if group.telegram %}<span>✈️ @{{ group.telegram }}</span>{% endif %}
+              {% if group.vk %}<span>🔵 VK</span>{% endif %}
+              {% if not group.phone and not group.telegram and not group.vk %}<span style="color:var(--muted);">Контакты не указаны</span>{% endif %}
+            </div>
+            {% if group.about %}
+              <div style="font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:10px;">{{ group.about|truncatewords:20 }}</div>
+            {% endif %}
+            <div class="group-card__offers">
+              {% if group.animals.count > 0 %}
+                <span class="badge badge--dark">🐾 Воспитанников: {{ group.animals.count }}</span>
+              {% endif %}
+              {% if group.events.count > 0 %}
+                <span class="badge badge--yellow">📋 Событий: {{ group.events.count }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div style="flex-shrink:0;font-size:22px;color:var(--red);">›</div>
+        </a>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">‹</a>{% endif %}
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}<span class="current">{{ num }}</span>
+        {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}<a href="?page={{ num }}">{{ num }}</a>{% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">›</a>{% endif %}
+    </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state__icon">🤝</div>
+      <h3>Групп пока нет</h3>
+      <p>Зарегистрируйтесь как приют, чтобы появиться здесь</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

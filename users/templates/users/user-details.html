@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if profile_user.name %}{{ profile_user.name }} {{ profile_user.surname }}{% else %}{{ profile_user.username }}{% endif %} — Дорога домой
+{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="user-detail-layout">
+
+    <!-- Card -->
+    <div class="user-card">
+      {% if profile_user.avatar %}
+        <img class="avatar-circle" src="{{ profile_user.avatar.url }}" alt=""
+             style="width:96px;height:96px;display:block;margin:0 auto 16px;" />
+      {% else %}
+        <div class="avatar-circle" style="width:96px;height:96px;font-size:38px;display:flex;margin:0 auto 16px;">
+          {{ profile_user.name|first|upper }}
+        </div>
+      {% endif %}
+
+      <div class="user-card__name">
+        {% if profile_user.name %}{{ profile_user.name }} {{ profile_user.surname }}{% else %}{{ profile_user.username }}{% endif %}
+      </div>
+      <div class="user-card__username">@{{ profile_user.username }}</div>
+      <span class="user-card__role">
+        {% if profile_user.role == 'shelter' %}🏠 Приют{% else %}👤 Пользователь{% endif %}
+      </span>
+
+      {% if profile_user.about %}
+        <div class="user-card__about">{{ profile_user.about|linebreaksbr }}</div>
+      {% endif %}
+
+      <div class="user-card__contacts">
+        {% if profile_user.phone %}
+          <div class="contact-item">📞 {{ profile_user.phone }}</div>
+        {% endif %}
+        {% if profile_user.telegram %}
+          <div class="contact-item">✈️ <a href="https://t.me/{{ profile_user.telegram }}">@{{ profile_user.telegram }}</a></div>
+        {% endif %}
+        {% if profile_user.vk %}
+          <div class="contact-item">🔵 <a href="{{ profile_user.vk }}" target="_blank">VK</a></div>
+        {% endif %}
+        {% if profile_user.email %}
+          <div class="contact-item">✉️ {{ profile_user.email }}</div>
+        {% endif %}
+      </div>
+
+      {% if user == profile_user %}
+      <div class="user-card__actions">
+        <a href="{% url 'users:edit_profile' %}" class="btn btn-red">✏️ Редактировать</a>
+        <a href="{% url 'users:change_password' %}" class="btn btn-ghost">🔒 Сменить пароль</a>
+        <a href="{% url 'animals:favorite_animals' %}" class="btn btn-outline">❤️ Избранное</a>
+        <a href="{% url 'events:my_applications' %}" class="btn btn-ghost">📋 Заявки</a>
+        <form method="post" action="{% url 'users:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost"
+                  style="width:100%;color:var(--red);border-color:var(--red);">Выйти</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right -->
+    <div class="user-main">
+
+      {% if profile_user.animals.all %}
+      <div class="section-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+          <h2 style="margin-bottom:0;">Воспитанники</h2>
+          <div class="album-filter" id="profileAnimalFilter" style="margin-bottom:0;">
+            <button class="album-filter-btn active" data-filter="all">Все</button>
+            <button class="album-filter-btn" data-filter="searching">Ищут дом</button>
+            <button class="album-filter-btn" data-filter="home">Нашли дом</button>
+          </div>
+        </div>
+
+        <div class="animals-grid" style="grid-template-columns:repeat(3,1fr);">
+          {% for animal in profile_user.animals.all %}
+            {% with photo=animal.photos.first %}
+            <a href="{% url 'animals:details' animal.id %}"
+               class="animal-card profile-animal-item"
+               data-status="{{ animal.status }}">
+              <div class="animal-card__img-wrap">
+                {% if photo %}
+                  <img src="{{ photo.image.url }}" alt="{{ animal.name }}" loading="lazy" />
+                {% else %}
+                  <div class="animal-card__img-placeholder">
+                    {% if animal.animal_type == 'cat' %}🐈{% else %}🐕{% endif %}
+                  </div>
+                {% endif %}
+                {% if animal.status == 'home' %}
+                  <div style="position:absolute;top:8px;left:8px;background:rgba(46,53,50,.85);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">✓ Дома</div>
+                {% endif %}
+              </div>
+              <div class="animal-card__info">
+                <div class="animal-card__name">{{ animal.name }}</div>
+                <div class="animal-card__meta" style="margin-left:0;">
+                  <span>{{ animal.get_sex_display }}</span>
+                  <span>·</span>
+                  <span>{{ animal.age_display }}</span>
+                </div>
+              </div>
+            </a>
+            {% endwith %}
+          {% endfor %}
+        </div>
+
+        <div id="profileAnimalsEmpty" style="display:none;text-align:center;padding:32px;color:var(--muted);">
+          <div style="font-size:40px;margin-bottom:10px;">🐾</div>
+          <div style="font-weight:700;">Питомцев не найдено</div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if profile_user.events.all %}
+      <div class="section-card">
+        <h2>События</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          {% for event in profile_user.events.all|slice:":5" %}
+            <a href="{% url 'events:details_event' event.id %}"
+               style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--cream);border-radius:var(--r-sm);text-decoration:none;color:var(--dark);border-left:3px solid var(--red);transition:background .15s;"
+               onmouseover="this.style.background='var(--cream2)'" onmouseout="this.style.background='var(--cream)'">
+              <span style="font-weight:700;">{{ event.title }}</span>
+              <span class="badge {% if event.urgency == 'high' %}badge--red{% elif event.urgency == 'medium' %}badge--yellow{% else %}badge--green{% endif %}">
+                {{ event.get_urgency_display }}
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var filterBtns = document.querySelectorAll('#profileAnimalFilter .album-filter-btn');
+  var items      = document.querySelectorAll('.profile-animal-item');
+  var emptyMsg   = document.getElementById('profileAnimalsEmpty');
+
+  filterBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      filterBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var filter  = btn.dataset.filter;
+      var visible = 0;
+      items.forEach(function (item) {
+        var show = filter === 'all' || item.dataset.status === filter;
+        item.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+    });
+  });
+})();
+</script>
+{% endblock %}
